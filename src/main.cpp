@@ -30,7 +30,7 @@ uint16_t stateUpdateCounter = 0;
 void setup() {
 	Serial.begin(9600);
   pixels.begin();
-  pixels.setBrightness(64);
+  pixels.setBrightness(32);
   EEPROM.begin(BSEC_MAX_STATE_BLOB_SIZE + 1);
   Wire.begin();
   iaqSensor.begin(BME680_I2C_ADDR_SECONDARY, Wire);
@@ -49,6 +49,7 @@ void setup() {
 }
 
 bool newData = false;
+bool updateRolling = false;
 unsigned long now = 0;
 unsigned short intervalSum = 0;
 unsigned char intervalCount = 0;
@@ -200,6 +201,7 @@ void processData(void) {
       intervalSum = 0;
       intervalCount = 0;
       rollingIaq[0] = 0;
+      updateRolling = true;
     }    
     if (intervalCount != 0) rollingIaq[0] = (intervalSum / intervalCount);
     lastThreeIaq[2] = lastThreeIaq[1];
@@ -212,31 +214,34 @@ void processData(void) {
 
 void showData(void) {
   short lastThreeIaqAv = (lastThreeIaq[0] + lastThreeIaq[1] + lastThreeIaq[2]) / 3;
-  if (lastThreeIaqAv < 75) {
-    pixels.setPixelColor(0, 0, 127, 0);
-  } else if (lastThreeIaqAv < 150) {
-    pixels.setPixelColor(0, 127, 127, 0);
-  } else if (lastThreeIaqAv < 200) {
-    pixels.setPixelColor(0, 80, 50, 15);
+  if (lastThreeIaqAv < 50) {
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(21845, 255, 105+(3*lastThreeIaqAv))));
+  } else if (lastThreeIaqAv < 100) {
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(21845-(lastThreeIaqAv-50), 255, 255)));
   } else if (lastThreeIaqAv < 250) {
-    pixels.setPixelColor(0, 127, 0, 0);
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(10922-(lastThreeIaqAv-100)*109, 255, 255)));
+  } else if (lastThreeIaqAv < 350) {
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(60074-(lastThreeIaqAv-150)*55, 255, 255)));
   } else {
-    pixels.setPixelColor(0, 102, 0, 51);
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(3640, 192, 92)));
   }
    
-  for (int i = 1; i < 8; i++)
-  {
-    if (rollingIaq[i] < 75) {
-      pixels.setPixelColor(i, 0, 127, 0);
-    } else if (rollingIaq[i] < 150) {
-      pixels.setPixelColor(i, 127, 127, 0);
-    } else if (rollingIaq[i] < 200) {
-      pixels.setPixelColor(i, 80, 50, 15);
-    } else if (rollingIaq[i] < 250) {
-      pixels.setPixelColor(i, 127, 0, 0);
-    } else {
-      pixels.setPixelColor(i, 102, 0, 51);
+  if (updateRolling) {
+    for (int i = 1; i < 8; i++)
+    {
+      if (rollingIaq[i] < 50) {
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845, 255, 105+(3*rollingIaq[i]))));
+      } else if (rollingIaq[i] < 100) {
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845-(rollingIaq[i]-50), 255, 255)));
+      } else if (rollingIaq[i] < 250) {
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(10922-(rollingIaq[i]-100)*109, 255, 255)));
+      } else if (rollingIaq[i] < 350) {
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(60074-(rollingIaq[i]-150)*55, 255, 255)));
+      } else {
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(3640, 192, 92)));
+      }
     }
+    updateRolling = false;
   }
   pixels.show();
 
