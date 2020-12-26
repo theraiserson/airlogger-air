@@ -187,5 +187,22 @@ void readSensor(void) {
 void showData(void) {
   
 }
-                             
+ // code-snippets for different colors.
+//*
+  IAQ 0-50       21845,               255, 105+3*IAQ    //dark green to light green
+  pixels.gamma32(pixels.ColorHSV(21845, 255, 105+(3*IAQ)) 
+                 
+  IAQ 51-100     21845-(IAQ-50)*218 , 255, 255          //light green to yellow
+  pixels.gamma32(pixels.ColorHSV(21845-(IAQ-50), 255, 255)
+                 
+  IAQ 101 - 250  10922-(IAQ-100)*109, 255, 255         //yellow to orange to red to magenta
+  pixels.gamma32(pixels.ColorHSV(10922-(IAQ-100)*109, 255, 255) 
+                 
+  IAQ 250 - 350  60074-(IAQ-150)*55,  255, 255         //magenta to violett
+  pixels.gamma32(pixels.ColorHSV(60074-(IAQ-150)*55, 255, 255)               
+                 
+  IAQ 350        3640,                192, 92          //brown
+  pixels.gamma32(pixels.ColorHSV(3640, 192, 92)
+  
+  int colors[8] = {0};                                 
                              
