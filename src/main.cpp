@@ -11,6 +11,7 @@ const uint8_t bsec_config_iaq[] = {
 #define NUMPIXELS 8
 #define SAVE_STATE_PERIOD (unsigned long) 7200000 // Every 120 Minutes (120 * 60 * 1000)
 #define SHOW_INTERVAL 300000 // Defines how many minutes are presented by one NeoPixel (Ervery 5 * 60 * 1000)
+#define BRIGHTNESS_DIVISOR 2 // Defines how bright the lights are, 1 is full brightness, 2 half, 3 third...
 
 void checkIaqSensorStatus(void);
 void errLeds(int);
@@ -30,7 +31,6 @@ uint16_t stateUpdateCounter = 0;
 void setup() {
 	Serial.begin(9600);
   pixels.begin();
-  pixels.setBrightness(32);
   EEPROM.begin(BSEC_MAX_STATE_BLOB_SIZE + 1);
   Wire.begin();
   iaqSensor.begin(BME680_I2C_ADDR_SECONDARY, Wire);
@@ -215,30 +215,30 @@ void processData(void) {
 void showData(void) {
   short lastThreeIaqAv = (lastThreeIaq[0] + lastThreeIaq[1] + lastThreeIaq[2]) / 3;
   if (lastThreeIaqAv < 50) {
-    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(21845, 255, 105+(3*lastThreeIaqAv))));
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(21845, 255, (105+(3*lastThreeIaqAv))/BRIGHTNESS_DIVISOR)));
   } else if (lastThreeIaqAv < 100) {
-    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(21845-(lastThreeIaqAv-50), 255, 255)));
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(21845-(lastThreeIaqAv-50)*218, 255, 255/BRIGHTNESS_DIVISOR)));
   } else if (lastThreeIaqAv < 250) {
-    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(10922-(lastThreeIaqAv-100)*109, 255, 255)));
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(10922-(lastThreeIaqAv-100)*109, 255, 255/BRIGHTNESS_DIVISOR)));
   } else if (lastThreeIaqAv < 350) {
-    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(60074-(lastThreeIaqAv-150)*55, 255, 255)));
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(60074-(lastThreeIaqAv-150)*55, 255, 255/BRIGHTNESS_DIVISOR)));
   } else {
-    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(3640, 192, 92)));
+    pixels.setPixelColor(0, pixels.gamma32(pixels.ColorHSV(3640, 192, 92/BRIGHTNESS_DIVISOR)));
   }
    
   if (updateRolling) {
     for (int i = 1; i < 8; i++)
     {
       if (rollingIaq[i] < 50) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845, 255, 105+(3*rollingIaq[i]))));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845, 255, (105+(3*rollingIaq[i])-(16*i))/BRIGHTNESS_DIVISOR)));
       } else if (rollingIaq[i] < 100) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845-(rollingIaq[i]-50), 255, 255)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845-(rollingIaq[i]-50)*218, 255, 255-(16*i)/BRIGHTNESS_DIVISOR)));
       } else if (rollingIaq[i] < 250) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(10922-(rollingIaq[i]-100)*109, 255, 255)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(10922-(rollingIaq[i]-100)*109, 255, 255-(16*i)/BRIGHTNESS_DIVISOR)));
       } else if (rollingIaq[i] < 350) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(60074-(rollingIaq[i]-150)*55, 255, 255)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(60074-(rollingIaq[i]-150)*55, 255, 255-(16*i)/BRIGHTNESS_DIVISOR)));
       } else {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(3640, 192, 92)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(3640, 192, 92-(5*i)/BRIGHTNESS_DIVISOR)));
       }
     }
     updateRolling = false;
@@ -246,5 +246,3 @@ void showData(void) {
   pixels.show();
 
 }
-                             
-                             
