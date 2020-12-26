@@ -230,15 +230,15 @@ void showData(void) {
     for (int i = 1; i < 8; i++)
     {
       if (rollingIaq[i] < 50) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845, 255, (105+(3*rollingIaq[i])-(16*i))/BRIGHTNESS_DIVISOR)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845, 255, (105+(3*rollingIaq[i]))/BRIGHTNESS_DIVISOR)));
       } else if (rollingIaq[i] < 100) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845-(rollingIaq[i]-50)*218, 255, 255-(16*i)/BRIGHTNESS_DIVISOR)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(21845-(rollingIaq[i]-50)*218, 255, 255/BRIGHTNESS_DIVISOR)));
       } else if (rollingIaq[i] < 250) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(10922-(rollingIaq[i]-100)*109, 255, 255-(16*i)/BRIGHTNESS_DIVISOR)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(10922-(rollingIaq[i]-100)*109, 255, 255/BRIGHTNESS_DIVISOR)));
       } else if (rollingIaq[i] < 350) {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(60074-(rollingIaq[i]-150)*55, 255, 255-(16*i)/BRIGHTNESS_DIVISOR)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(60074-(rollingIaq[i]-150)*55, 255, 255/BRIGHTNESS_DIVISOR)));
       } else {
-        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(3640, 192, 92-(5*i)/BRIGHTNESS_DIVISOR)));
+        pixels.setPixelColor(i, pixels.gamma32(pixels.ColorHSV(3640, 192, 92/BRIGHTNESS_DIVISOR)));
       }
     }
     updateRolling = false;
